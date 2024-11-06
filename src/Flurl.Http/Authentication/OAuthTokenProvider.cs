@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +13,11 @@ namespace Flurl.Http.Authentication
 	/// </summary>
 	public abstract class OAuthTokenProvider : IOAuthTokenProvider
     {
+        /// <summary>
+        /// The default set of empty scopes
+        /// </summary>
+        protected static readonly ISet<string> EmptyScope = new HashSet<string>();
+
         private class CacheEntry
         {
             public SemaphoreSlim Semaphore { get; }
@@ -45,14 +52,18 @@ namespace Flurl.Http.Authentication
         /// <summary>
         /// Gets the OAuth authentication header for the specified scope
         /// </summary>
-        /// <param name="scope">The desired scope</param>
+        /// <param name="scopes">The desired set of scopes</param>
         /// <returns></returns>
-        public async Task<AuthenticationHeaderValue> GetAuthenticationHeader(string scope)
+        public async Task<AuthenticationHeaderValue> GetAuthenticationHeader(ISet<string> scopes)
         {
             var now = DateTimeOffset.Now;
 
+            scopes??= EmptyScope;
+            
+            var cacheKey = string.Join(" ", scopes);
+            
             //if the scope is not in the cache, add it as an expired entry so we force a refresh
-            var entry = _tokens.GetOrAdd(scope, s =>
+            var entry = _tokens.GetOrAdd(cacheKey, s =>
             {
                 return new CacheEntry
                 {
@@ -71,7 +82,7 @@ namespace Flurl.Http.Authentication
 
                     if (tokenIsValid == false)
                     {
-                        var generatedToken = await GetToken(scope);
+                        var generatedToken = await GetToken(scopes);
 
                         //if we're configured to expire tokens early, adjust the expiration time
                         if (_earlyExpiration > TimeSpan.Zero)
@@ -91,9 +102,9 @@ namespace Flurl.Http.Authentication
         }
 
         /// <summary>
-        /// Retrieves the OAuth token for the specified scope
+        /// Retrieves the OAuth token for the specified scopes
         /// </summary>
         /// <returns>The refreshed OAuth token</returns>
-        protected abstract Task<ExpirableToken> GetToken(string scope);
+        protected abstract Task<ExpirableToken> GetToken(ISet<string> scopes);
     }
 }

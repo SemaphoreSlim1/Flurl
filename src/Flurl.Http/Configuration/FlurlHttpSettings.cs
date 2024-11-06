@@ -96,9 +96,9 @@ namespace Flurl.Http.Configuration
         /// <summary>
         /// Gets or sets the OAuth scope to request from <see cref="OAuthTokenProvider"/>
         /// </summary>
-        public string OAuthTokenScope
+        public ISet<string> OAuthTokenScopes
         {
-            get => Get<string>();
+            get => Get<ISet<string>>();
             set => Set(value);
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
@@ -37,21 +38,24 @@ namespace Flurl.Http.Authentication
         /// <summary>
         /// Gets the OAuth authentication header for the specified scope
         /// </summary>
-        /// <param name="scope">The desired scope</param>
+        /// <param name="scopes">The desired set of scopes</param>
         /// <returns></returns>
-        protected override async Task<ExpirableToken> GetToken(string scope)
+        protected override async Task<ExpirableToken> GetToken(ISet<string> scopes)
         {
             var now = DateTimeOffset.Now;
 
             var body = new Dictionary<string, string>
             {
                 ["client_id"] = _clientId,
-                ["scope"] = scope,
-                ["grant_type"] = "client_credentials"
             };
-
+            
             if (string.IsNullOrWhiteSpace(_clientSecret) == false)
             { body["client_secret"] = _clientSecret; }
+
+            body["grant_type"] = "client_credentials";
+
+            if (scopes.Any())
+            { body["scope"] = string.Join(" ", scopes); }
 
             var rawResponse = await _fc.Request("connect", "token")
                                         .WithHeader("accept", "application/json")
@@ -75,7 +79,7 @@ namespace Flurl.Http.Authentication
                 }
                 catch (Exception)
                 {
-                    errorMessage = $"{_clientId} is not allowed to utilize scope {scope}, or {scope} is not a valid scope. Verify the allowed scopes for {_clientId} and try again.";
+                    errorMessage = $"Verify the allowed scopes for {_clientId} and try again.";
                 }
 
                 throw new UnauthorizedAccessException(errorMessage);

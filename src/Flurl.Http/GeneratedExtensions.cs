@@ -733,13 +733,13 @@ namespace Flurl.Http
 		}
 		
 		/// <summary>
-		/// Creates a new FlurlRequest and configures it to request an OAuth bearer token of the specified scope from the OAuth token provider
+		/// Creates a new FlurlRequest and configures it to request an OAuth bearer token of the specified scope(s) from the OAuth token provider
 		/// </summary>
 		/// <param name="url">This Flurl.Url.</param>
-		/// <param name="scope">The scope of the token</param>
+		/// <param name="scopes">The scope(s) of the token</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest WithOAuthTokenFromProvider(this Url url, string scope) {
-			return new FlurlRequest(url).WithOAuthTokenFromProvider(scope);
+		public static IFlurlRequest WithOAuthTokenFromProvider(this Url url, params string[] scopes) {
+			return new FlurlRequest(url).WithOAuthTokenFromProvider(scopes);
 		}
 		
 		/// <summary>
@@ -1272,13 +1272,13 @@ namespace Flurl.Http
 		}
 		
 		/// <summary>
-		/// Creates a new FlurlRequest and configures it to request an OAuth bearer token of the specified scope from the OAuth token provider
+		/// Creates a new FlurlRequest and configures it to request an OAuth bearer token of the specified scope(s) from the OAuth token provider
 		/// </summary>
 		/// <param name="url">This URL.</param>
-		/// <param name="scope">The scope of the token</param>
+		/// <param name="scopes">The scope(s) of the token</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest WithOAuthTokenFromProvider(this string url, string scope) {
-			return new FlurlRequest(url).WithOAuthTokenFromProvider(scope);
+		public static IFlurlRequest WithOAuthTokenFromProvider(this string url, params string[] scopes) {
+			return new FlurlRequest(url).WithOAuthTokenFromProvider(scopes);
 		}
 		
 		/// <summary>
@@ -1811,13 +1811,13 @@ namespace Flurl.Http
 		}
 		
 		/// <summary>
-		/// Creates a new FlurlRequest and configures it to request an OAuth bearer token of the specified scope from the OAuth token provider
+		/// Creates a new FlurlRequest and configures it to request an OAuth bearer token of the specified scope(s) from the OAuth token provider
 		/// </summary>
 		/// <param name="uri">This System.Uri.</param>
-		/// <param name="scope">The scope of the token</param>
+		/// <param name="scopes">The scope(s) of the token</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest WithOAuthTokenFromProvider(this Uri uri, string scope) {
-			return new FlurlRequest(uri).WithOAuthTokenFromProvider(scope);
+		public static IFlurlRequest WithOAuthTokenFromProvider(this Uri uri, params string[] scopes) {
+			return new FlurlRequest(uri).WithOAuthTokenFromProvider(scopes);
 		}
 		
 		/// <summary>

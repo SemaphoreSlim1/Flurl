@@ -164,8 +164,7 @@ namespace Flurl.Http
 				string.IsNullOrWhiteSpace(authValue) &&
                 settings.OAuthTokenProvider != null)
             {
-                var scope = string.IsNullOrWhiteSpace(settings.OAuthTokenScope) ? string.Empty : settings.OAuthTokenScope;
-                var authHeader = await settings.OAuthTokenProvider.GetAuthenticationHeader(scope);
+                var authHeader = await settings.OAuthTokenProvider.GetAuthenticationHeader(settings.OAuthTokenScopes);
                 request.Headers.Add("Authorization", authHeader.ToString());
             }
 

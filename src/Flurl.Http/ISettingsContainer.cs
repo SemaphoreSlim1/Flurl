@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Flurl.Http.Authentication;
@@ -116,13 +117,14 @@ namespace Flurl.Http
 		}
 
 		/// <summary>
-		/// Configures the OAuth scope to obtain from the configured OAuthTokenProvider
+		/// Configures the OAuth scope(s) to obtain from the configured OAuthTokenProvider
 		/// </summary>
 		/// <param name="obj">Object containing settings.</param>
-		/// <param name="scope">The scope of the token</param>
+		/// <param name="scopes">The scope(s) of the token</param>
 		/// <returns></returns>
-		public static T WithOAuthTokenFromProvider<T>(this T obj, string scope) where T : ISettingsContainer {
-			obj.Settings.OAuthTokenScope = scope;
+		public static T WithOAuthTokenFromProvider<T>(this T obj, params string[] scopes) where T : ISettingsContainer {
+			var distinctScopes = new HashSet<string>(scopes ?? Array.Empty<string>());
+			obj.Settings.OAuthTokenScopes = distinctScopes;
 			return obj;
 		}
 	}

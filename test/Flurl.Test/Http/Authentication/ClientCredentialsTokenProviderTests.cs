@@ -3,6 +3,7 @@ using Flurl.Http.Authentication;
 using Flurl.Http.Testing;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -11,10 +12,10 @@ namespace Flurl.Test.Http.Authentication
 	[TestFixture]
     public class ClientCredentialsTokenProviderTests : HttpTestFixtureBase
     {
-        [TestCase("secret")]
-        [TestCase("")]
-        [TestCase(null)]
-        public async Task GetAuthenticationHeader_OnlyPassesClientSecretIfSet(string clientSecret)
+        [TestCase("secret", "client_id=unitTestClient&client_secret=secret&grant_type=client_credentials&scope=unitTestScope")]
+        [TestCase("", "client_id=unitTestClient&grant_type=client_credentials&scope=unitTestScope")]
+        [TestCase(null, "client_id=unitTestClient&grant_type=client_credentials&scope=unitTestScope")]
+        public async Task GetAuthenticationHeader_OnlyPassesClientSecretIfSet(string clientSecret, string expectedBody)
         {
             var body = new
             {
@@ -28,12 +29,13 @@ namespace Flurl.Test.Http.Authentication
 
             var provider = new ClientCredentialsTokenProvider("unitTestClient", clientSecret, cli);
 
-            var authHeader = await provider.GetAuthenticationHeader("unitTestScope");
+            var scopes = new HashSet<string>(new[] { "unitTestScope" });
+            var authHeader = await provider.GetAuthenticationHeader(scopes);
 
             HttpTest.ShouldHaveCalled("https://flurl.dev/connect/token")
                     .WithVerb(HttpMethod.Post)
                     .WithContentType("application/x-www-form-urlencoded")
-                    .WithRequestBody($"client_id=unitTestClient&scope=unitTestScope&grant_type=client_credentials{(string.IsNullOrWhiteSpace(clientSecret) ? "" : $"&client_secret={clientSecret}")}")
+                    .WithRequestBody(expectedBody)
                     .WithHeader("accept", "application/json")
                     .Times(1);
         }
@@ -53,7 +55,8 @@ namespace Flurl.Test.Http.Authentication
 
             var provider = new ClientCredentialsTokenProvider("unitTestClient", "secret", cli);
 
-            var authHeader = await provider.GetAuthenticationHeader("scope");
+            var scopes = new HashSet<string>(new[] { "unitTestScope" });
+            var authHeader = await provider.GetAuthenticationHeader(scopes);
 
             Assert.AreEqual("UnitTestAccessToken", authHeader.Parameter);
         }
@@ -72,7 +75,8 @@ namespace Flurl.Test.Http.Authentication
 
             var provider = new ClientCredentialsTokenProvider("unitTestClient", "secret", cli);
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(() => provider.GetAuthenticationHeader("testScope"));
+            var scopes = new HashSet<string>(new[] { "unitTestScope" });
+            Assert.ThrowsAsync<UnauthorizedAccessException>(() => provider.GetAuthenticationHeader(scopes));
         }
 
         [Test]
@@ -84,8 +88,9 @@ namespace Flurl.Test.Http.Authentication
 
             var provider = new ClientCredentialsTokenProvider("unitTestClient", "secret", cli);
 
-            var expectedMessage = $"unitTestClient is not allowed to utilize scope testScope, or testScope is not a valid scope. Verify the allowed scopes for unitTestClient and try again.";
-            Assert.ThrowsAsync<UnauthorizedAccessException>(() => provider.GetAuthenticationHeader("testScope"), expectedMessage);
+            var scopes = new HashSet<string>(new[] { "unitTestScope" });
+            var expectedMessage = $"Verify the allowed scopes for unitTestClient and try again.";
+            Assert.ThrowsAsync<UnauthorizedAccessException>(() => provider.GetAuthenticationHeader(scopes), expectedMessage);
         }
 
         [Test]
@@ -97,8 +102,9 @@ namespace Flurl.Test.Http.Authentication
 
             var provider = new ClientCredentialsTokenProvider("unitTestClient", "secret", cli);
 
+            var scopes = new HashSet<string>(new[] { "unitTestScope" });
             var expectedMessage = "Unable to acquire OAuth token";
-            Assert.ThrowsAsync<UnauthorizedAccessException>(() => provider.GetAuthenticationHeader("testScope"), expectedMessage);
+            Assert.ThrowsAsync<UnauthorizedAccessException>(() => provider.GetAuthenticationHeader(scopes), expectedMessage);
         }
     }
 }
